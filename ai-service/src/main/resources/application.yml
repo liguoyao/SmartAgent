@@ -1,0 +1,59 @@
+server:
+  port: 8000
+
+spring:
+  application:
+    name: smartagent-ai-service
+  
+  # Redis configuration (optional - falls back to in-memory)
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      db: ${REDIS_DB:0}
+      password: ${REDIS_PASSWORD:}
+
+# Application configuration
+app:
+  name: SmartAgent AI Service
+  version: 1.0.0
+  debug: false
+  
+  # DeepSeek LLM
+  deepseek:
+    api-key: ${DEEPSEEK_API_KEY:}
+    base-url: https://api.deepseek.com/v1
+    model: deepseek-chat
+    max-tokens: 2048
+    temperature: 0.7
+  
+  # Fallback LLM
+  fallback:
+    api-key: ${FALLBACK_API_KEY:}
+    base-url: https://api.openai.com/v1
+    model: gpt-4-turbo-preview
+    max-tokens: 2048
+    temperature: 0.7
+  
+  # Vector store
+  vector-store:
+    path: ./data/vector_store
+    embedding-model: sentence-transformers/all-MiniLM-L6-v2
+    top-k: 5
+  
+  # Redis
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    db: ${REDIS_DB:0}
+    password: ${REDIS_PASSWORD:}
+    conversation-ttl: 3600
+  
+  # Retry
+  max-retries: 3
+
+logging:
+  level:
+    com.smartagent: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
