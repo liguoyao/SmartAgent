@@ -4,26 +4,20 @@ import com.baomidou.mybatisplus.annotation.*;
 import com.smartagent.common.entity.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.experimental_superbuilder.ExperimentalSuperBuilder;
 
 /**
  * Agent entity representing an AI agent in the system
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@ExperimentalSuperBuilder
 @TableName("agents")
 public class Agent extends BaseEntity {
-
-    @TableId(type = IdType.AUTO)
-    private Long id;
 
     @TableField("name")
     private String name;
 
     @TableField("type")
-    @Enumerated(EnumType.STRING)
-    private AgentType type;
+    private String type;
 
     @TableField("description")
     private String description;

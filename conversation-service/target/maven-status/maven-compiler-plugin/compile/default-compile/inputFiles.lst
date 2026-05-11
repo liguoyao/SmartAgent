@@ -1,0 +1,10 @@
+/Users/huanghuixiang/smartagent/conversation-service/src/main/java/com/smartagent/conversation/websocket/WebSocketAuthInterceptor.java
+/Users/huanghuixiang/smartagent/conversation-service/src/main/java/com/smartagent/conversation/service/ConversationService.java
+/Users/huanghuixiang/smartagent/conversation-service/src/main/java/com/smartagent/conversation/websocket/ChatWebSocketHandler.java
+/Users/huanghuixiang/smartagent/conversation-service/src/main/java/com/smartagent/conversation/config/WebSocketConfig.java
+/Users/huanghuixiang/smartagent/conversation-service/src/main/java/com/smartagent/conversation/entity/Conversation.java
+/Users/huanghuixiang/smartagent/conversation-service/src/main/java/com/smartagent/conversation/entity/Message.java
+/Users/huanghuixiang/smartagent/conversation-service/src/main/java/com/smartagent/conversation/controller/ConversationController.java
+/Users/huanghuixiang/smartagent/conversation-service/src/main/java/com/smartagent/conversation/repository/MessageRepository.java
+/Users/huanghuixiang/smartagent/conversation-service/src/main/java/com/smartagent/conversation/repository/ConversationRepository.java
+/Users/huanghuixiang/smartagent/conversation-service/src/main/java/com/smartagent/conversation/service/MessageService.java

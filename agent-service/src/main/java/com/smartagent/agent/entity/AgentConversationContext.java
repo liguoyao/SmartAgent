@@ -4,19 +4,14 @@ import com.baomidou.mybatisplus.annotation.*;
 import com.smartagent.common.entity.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.experimental_superbuilder.ExperimentalSuperBuilder;
 
 /**
  * Conversation context for agent conversations
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@ExperimentalSuperBuilder
 @TableName("agent_conversation_context")
 public class AgentConversationContext extends BaseEntity {
-
-    @TableId(type = IdType.AUTO)
-    private Long id;
 
     @TableField("session_id")
     private String sessionId;
@@ -28,8 +23,7 @@ public class AgentConversationContext extends BaseEntity {
     private Long agentId;
 
     @TableField("agent_type")
-    @Enumerated(EnumType.STRING)
-    private AgentType agentType;
+    private String agentType;
 
     @TableField("current_state")
     private String currentState;

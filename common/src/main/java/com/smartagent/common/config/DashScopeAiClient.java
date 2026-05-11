@@ -1,16 +1,17 @@
 package com.smartagent.common.config;
 
-import com.alibaba.dashscope.aigc.messages.*;
-import com.alibaba.dashscope.common.*;
-import com.alibaba.dashscope.exception.ApiException;
-import com.alibaba.dashscope.exception.NoApiKeyException;
-import com.alibaba.dashscope.utils.ApiUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.WebClient;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * Alibaba Cloud DashScope AI SDK client for LLM integration
+ * Uses HTTP API directly for better compatibility
  */
 @Slf4j
 @Component
@@ -31,103 +32,143 @@ public class DashScopeAiClient {
     @Value("${dashscope.max-tokens:2000}")
     private Integer defaultMaxTokens;
 
-    /**
-     * Call LLM with messages
-     */
+    private final WebClient webClient;
+
+    public DashScopeAiClient(WebClient.Builder webClientBuilder) {
+        this.webClient = webClientBuilder
+            .baseUrl(baseUrl)
+            .defaultHeader("Authorization", "Bearer " + apiKey)
+            .build();
+    }
+
     public String chat(String prompt) {
         return chat(prompt, defaultModel, defaultTemperature, defaultMaxTokens);
     }
 
-    /**
-     * Call LLM with custom parameters
-     */
     public String chat(String prompt, String model, Double temperature, Integer maxTokens) {
         try {
-            MultiMessage messages = MultiMessage.builder()
-                    .add(UserMessage.from(prompt))
-                    .build();
-
-            ApiResult result = callApi(model, messages, temperature, maxTokens);
-            return extractContent(result);
-        } catch (NoApiKeyException e) {
-            log.error("No API key configured for DashScope");
-            throw new RuntimeException("AI service not configured properly", e);
-        } catch (ApiException e) {
+            Map<String, Object> request = buildRequest(prompt, model, temperature, maxTokens);
+            Map<String, Object> response = webClient.post()
+                .uri("/services/aigc/text-generation/generation")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(request)
+                .retrieve()
+                .bodyToMono(Map.class)
+                .block();
+            return extractContent(response);
+        } catch (Exception e) {
             log.error("DashScope API error: {}", e.getMessage());
             throw new RuntimeException("AI service error: " + e.getMessage(), e);
         }
     }
 
-    /**
-     * Chat with system prompt and user message
-     */
     public String chatWithSystem(String systemPrompt, String userMessage) {
         return chatWithSystem(systemPrompt, userMessage, defaultModel, defaultTemperature, defaultMaxTokens);
     }
 
-    /**
-     * Chat with system prompt and user message with custom parameters
-     */
     public String chatWithSystem(String systemPrompt, String userMessage, String model, 
-                                  Double temperature, Integer maxTokens) {
+                                 Double temperature, Integer maxTokens) {
         try {
-            MultiMessage messages = MultiMessage.builder()
-                    .add(SystemMessage.from(systemPrompt))
-                    .add(UserMessage.from(userMessage))
-                    .build();
-
-            ApiResult result = callApi(model, messages, temperature, maxTokens);
-            return extractContent(result);
-        } catch (NoApiKeyException e) {
-            log.error("No API key configured for DashScope");
-            throw new RuntimeException("AI service not configured properly", e);
-        } catch (ApiException e) {
+            List<Map<String, String>> messages = List.of(
+                Map.of("role", "system", "content", systemPrompt),
+                Map.of("role", "user", "content", userMessage)
+            );
+            Map<String, Object> request = Map.of(
+                "model", model,
+                "input", Map.of("messages", messages),
+                "parameters", Map.of(
+                    "temperature", temperature,
+                    "max_tokens", maxTokens,
+                    "result_format", "message"
+                )
+            );
+            Map<String, Object> response = webClient.post()
+                .uri("/services/aigc/text-generation/generation")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(request)
+                .retrieve()
+                .bodyToMono(Map.class)
+                .block();
+            return extractContent(response);
+        } catch (Exception e) {
             log.error("DashScope API error: {}", e.getMessage());
             throw new RuntimeException("AI service error: " + e.getMessage(), e);
         }
     }
 
-    /**
-     * Classify intent using LLM
-     */
     public String classifyIntent(String message, String[] categories) {
         String categoryList = String.join(", ", categories);
         String prompt = String.format(
             "Classify the following customer message into one of these categories: %s\n\n" +
-            "Message: %s\n\n" +
-            "Respond with ONLY the category name, nothing else.",
+            "Message: %s\n\nRespond with ONLY the category name.",
             categoryList, message
         );
         return chat(prompt).trim();
     }
 
-    /**
-     * Generate embedding for text
-     */
     public float[] generateEmbedding(String text) {
-        // Placeholder - in production, use the embeddings API
-        log.info("Generating embedding for text of length: {}", text.length());
-        // Return a mock embedding for compilation
+        try {
+            Map<String, Object> request = Map.of(
+                "model", "text-embedding-v3",
+                "input", Map.of("texts", List.of(text))
+            );
+            Map<String, Object> response = webClient.post()
+                .uri("/services/embeddings/text-embedding/text-embedding")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(request)
+                .retrieve()
+                .bodyToMono(Map.class)
+                .block();
+
+            if (response != null && response.containsKey("output")) {
+                Map<String, Object> output = (Map<String, Object>) response.get("output");
+                List<?> embeddings = (List<?>) output.get("embeddings");
+                if (embeddings != null && !embeddings.isEmpty()) {
+                    Object first = embeddings.get(0);
+                    if (first instanceof List) {
+                        List<?> vec = (List<?>) first;
+                        float[] result = new float[vec.size()];
+                        for (int i = 0; i < vec.size(); i++) {
+                            result[i] = ((Number) vec.get(i)).floatValue();
+                        }
+                        return result;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Embedding generation failed: {}", e.getMessage());
+        }
         return new float[1536];
     }
 
-    private ApiResult callApi(String model, MultiMessage messages, 
-                               Double temperature, Integer maxTokens) throws NoApiKeyException, ApiException {
-        GenerationParam param = GenerationParam.builder()
-                .model(model)
-                .messages(messages)
-                .temperature(temperature)
-                .maxTokens(maxTokens)
-                .resultFormat(ResultFormat.MESSAGE)
-                .build();
-
-        Generation generation = new Generation();
-        return generation.call(param);
+    private Map<String, Object> buildRequest(String prompt, String model, Double temperature, Integer maxTokens) {
+        return Map.of(
+            "model", model,
+            "input", Map.of("messages", List.of(
+                Map.of("role", "user", "content", prompt)
+            )),
+            "parameters", Map.of(
+                "temperature", temperature,
+                "max_tokens", maxTokens,
+                "result_format", "message"
+            )
+        );
     }
 
-    private String extractContent(ApiResult result) {
-        if (result != null && result.getOutput() != null) {
-            return result.getOutput().getChoices().getMessage().getContent();
+    @SuppressWarnings("unchecked")
+    private String extractContent(Map<String, Object> response) {
+        if (response != null && response.containsKey("output")) {
+            Map<String, Object> output = (Map<String, Object>) response.get("output");
+            if (output.containsKey("choices")) {
+                List<Map<String, Object>> choices = (List<Map<String, Object>>) output.get("choices");
+                if (choices != null && !choices.isEmpty()) {
+                    Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
+                    return (String) message.get("content");
+                }
+            }
+            if (output.containsKey("text")) {
+                return (String) output.get("text");
+            }
         }
         return "";
     }

@@ -76,7 +76,7 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public Mono<ResponseEntity<ApiResponse<Void>>> logout(@RequestHeader("Authorization") String authHeader) {
+    public Mono<ResponseEntity<ApiResponse<String>>> logout(@RequestHeader("Authorization") String authHeader) {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
             // Add token to blacklist

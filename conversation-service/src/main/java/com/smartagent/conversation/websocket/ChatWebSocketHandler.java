@@ -240,6 +240,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         private Long messageId;
         private String sessionId;
         private Long senderId;
+        private Long agentId;
         private String senderType;
         private String content;
         private String agentType;

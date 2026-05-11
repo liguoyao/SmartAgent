@@ -1,0 +1,7 @@
+/Users/huanghuixiang/smartagent/knowledge-service/src/main/java/com/smartagent/knowledge/entity/KnowledgeDocument.java
+/Users/huanghuixiang/smartagent/knowledge-service/src/main/java/com/smartagent/knowledge/repository/KnowledgeDocumentRepository.java
+/Users/huanghuixiang/smartagent/knowledge-service/src/main/java/com/smartagent/knowledge/repository/KnowledgeChunkRepository.java
+/Users/huanghuixiang/smartagent/knowledge-service/src/main/java/com/smartagent/knowledge/service/KnowledgeService.java
+/Users/huanghuixiang/smartagent/knowledge-service/src/main/java/com/smartagent/knowledge/entity/KnowledgeChunk.java
+/Users/huanghuixiang/smartagent/knowledge-service/src/main/java/com/smartagent/knowledge/KnowledgeServiceApplication.java
+/Users/huanghuixiang/smartagent/knowledge-service/src/main/java/com/smartagent/knowledge/controller/KnowledgeController.java

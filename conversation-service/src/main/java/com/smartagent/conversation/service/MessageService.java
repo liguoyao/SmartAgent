@@ -104,7 +104,7 @@ public class MessageService {
      */
     @Transactional
     public void markAsRead(Long messageId) {
-        messageRepository.selectById(messageId).ifPresent(message -> {
+        Optional.ofNullable(messageRepository.selectById(messageId)).ifPresent(message -> {
             // Mark as read logic if needed
             log.debug("Marked message as read: id={}", messageId);
         });

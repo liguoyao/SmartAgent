@@ -1,0 +1,3 @@
+com/smartagent/gateway/GatewayApplication.class
+com/smartagent/gateway/controller/AuthController.class
+com/smartagent/gateway/filter/JwtAuthenticationFilter.class

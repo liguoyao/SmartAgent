@@ -2,16 +2,16 @@ package com.smartagent.conversation.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import com.smartagent.common.entity.BaseEntity;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.experimental_superbuilder.ExperimentalSuperBuilder;
 
 /**
  * Message entity representing a chat message
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@ExperimentalSuperBuilder
+@Builder
 @TableName("messages")
 public class Message extends BaseEntity {
 

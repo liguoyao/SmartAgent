@@ -1,0 +1,7 @@
+com/smartagent/ticket/entity/Ticket.class
+com/smartagent/ticket/repository/TicketCommentRepository.class
+com/smartagent/ticket/entity/TicketComment.class
+com/smartagent/ticket/TicketServiceApplication.class
+com/smartagent/ticket/service/TicketService.class
+com/smartagent/ticket/repository/TicketRepository.class
+com/smartagent/ticket/controller/TicketController.class

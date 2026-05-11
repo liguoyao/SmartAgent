@@ -1,0 +1,7 @@
+/Users/huanghuixiang/smartagent/ticket-service/src/main/java/com/smartagent/ticket/service/TicketService.java
+/Users/huanghuixiang/smartagent/ticket-service/src/main/java/com/smartagent/ticket/entity/TicketComment.java
+/Users/huanghuixiang/smartagent/ticket-service/src/main/java/com/smartagent/ticket/entity/Ticket.java
+/Users/huanghuixiang/smartagent/ticket-service/src/main/java/com/smartagent/ticket/repository/TicketCommentRepository.java
+/Users/huanghuixiang/smartagent/ticket-service/src/main/java/com/smartagent/ticket/repository/TicketRepository.java
+/Users/huanghuixiang/smartagent/ticket-service/src/main/java/com/smartagent/ticket/controller/TicketController.java
+/Users/huanghuixiang/smartagent/ticket-service/src/main/java/com/smartagent/ticket/TicketServiceApplication.java

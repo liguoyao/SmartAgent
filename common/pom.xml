@@ -48,7 +48,7 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>dashscope-sdk-java</artifactId>
-            <version>2.16.9</version>
+            <version>2.20.0</version>
         </dependency>
 
         <!-- Springdoc OpenAPI for API documentation -->
@@ -94,6 +94,12 @@
             <groupId>io.hypersistence</groupId>
             <artifactId>hypersistence-utils-hibernate-63</artifactId>
             <version>3.7.3</version>
+        </dependency>
+
+        <!-- WebFlux for WebClient -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
         </dependency>
     </dependencies>
 </project>

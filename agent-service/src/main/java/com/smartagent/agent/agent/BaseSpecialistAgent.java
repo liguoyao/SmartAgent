@@ -36,6 +36,11 @@ public abstract class BaseSpecialistAgent implements SpecialistAgent {
         return getAgentType();
     }
 
+    /**
+     * Get the agent type - must be implemented by subclasses
+     */
+    protected abstract AgentType getAgentType();
+
     @Override
     public SupervisorAgent.AgentResponse process(String message, String sessionId, Long userId) {
         long startTime = System.currentTimeMillis();
@@ -116,7 +121,7 @@ public abstract class BaseSpecialistAgent implements SpecialistAgent {
         
         try {
             String response = aiClient.chat(extractionPrompt);
-            return JSON.parseObject(response);
+            return JSON.parseObject(response, Map.class);
         } catch (Exception e) {
             log.error("Error extracting entities", e);
             return new HashMap<>();

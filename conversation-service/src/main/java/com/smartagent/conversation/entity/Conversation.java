@@ -2,9 +2,9 @@ package com.smartagent.conversation.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import com.smartagent.common.entity.BaseEntity;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.experimental_superbuilder.ExperimentalSuperBuilder;
 
 import java.time.LocalDateTime;
 
@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@ExperimentalSuperBuilder
+@Builder
 @TableName("conversations")
 public class Conversation extends BaseEntity {
 
