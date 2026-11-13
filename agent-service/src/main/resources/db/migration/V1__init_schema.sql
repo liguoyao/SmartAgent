@@ -2,7 +2,7 @@
 
 -- Agents table
 CREATE TABLE agents (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     type VARCHAR(50) NOT NULL,
     description TEXT,
@@ -16,36 +16,36 @@ CREATE TABLE agents (
     success_rate DECIMAL(5,2) DEFAULT 0.0,
     avg_response_time_ms BIGINT DEFAULT 0,
     total_handled BIGINT DEFAULT 0,
-    config JSONB,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    config JSON,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     version BIGINT DEFAULT 0,
     deleted BOOLEAN DEFAULT FALSE,
     CONSTRAINT chk_agent_type CHECK (type IN ('SUPERVISOR', 'PRODUCT', 'COMPLAINT', 'REFUND', 'ORDER', 'TECHNICAL', 'BILLING', 'ESCALATION'))
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 -- Agent conversation context table
 CREATE TABLE agent_conversation_context (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
     session_id VARCHAR(100) NOT NULL,
     user_id BIGINT,
     agent_id BIGINT,
     agent_type VARCHAR(50),
     current_state VARCHAR(50),
-    context_data JSONB,
-    message_history JSONB,
-    metadata JSONB,
+    context_data JSON,
+    message_history JSON,
+    metadata JSON,
     is_active BOOLEAN DEFAULT TRUE,
-    last_message_at TIMESTAMP,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_message_at DATETIME,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     version BIGINT DEFAULT 0,
     deleted BOOLEAN DEFAULT FALSE
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 -- Agent message log table
 CREATE TABLE agent_message_log (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
     session_id VARCHAR(100) NOT NULL,
     user_id BIGINT,
     agent_id BIGINT,
@@ -55,13 +55,13 @@ CREATE TABLE agent_message_log (
     intent VARCHAR(50),
     confidence DECIMAL(5,2),
     processing_time_ms BIGINT,
-    metadata JSONB,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+    metadata JSON,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 -- Agent statistics table
 CREATE TABLE agent_statistics (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
     agent_id BIGINT NOT NULL,
     date DATE NOT NULL,
     total_messages BIGINT DEFAULT 0,
@@ -69,10 +69,10 @@ CREATE TABLE agent_statistics (
     escalated_messages BIGINT DEFAULT 0,
     avg_response_time_ms BIGINT DEFAULT 0,
     avg_confidence DECIMAL(5,2) DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(agent_id, date)
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 -- Indexes
 CREATE INDEX idx_agents_type ON agents(type);

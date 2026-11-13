@@ -73,7 +73,7 @@ public class ConversationMemoryService {
             }
             redisTemplate.expire(key, java.time.Duration.ofSeconds(appProperties.getRedis().getConversationTtl()));
             
-            log.debug("Message added to Redis", "sessionId", sessionId);
+            log.debug("Message added to Redis: {}", key);
         } catch (Exception e) {
             log.error("Failed to add message to Redis, falling back to memory", e);
             redisAvailable = false;

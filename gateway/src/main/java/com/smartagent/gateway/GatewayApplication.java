@@ -10,7 +10,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
  * API Gateway with JWT authentication, rate limiting, and service routing
  */
 @EnableDiscoveryClient
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = {"com.smartagent.common", "com.smartagent.gateway"})
 @MapperScan("com.smartagent.gateway.mapper")
 public class GatewayApplication {
 

@@ -8,10 +8,10 @@ spring:
   # Redis configuration (optional - falls back to in-memory)
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
+      host: ${REDIS_HOST:r-bp11djv7d4lnne5p6z.redis.rds.aliyuncs.com}
       port: ${REDIS_PORT:6379}
-      db: ${REDIS_DB:0}
-      password: ${REDIS_PASSWORD:}
+      db: ${REDIS_DB:8}
+      password: ${REDIS_PASSWORD:heMntYjSC3GArYe3hCWGvEEF}
 
 # Application configuration
 app:
@@ -21,7 +21,7 @@ app:
   
   # DeepSeek LLM
   deepseek:
-    api-key: ${DEEPSEEK_API_KEY:}
+    api-key: ${DEEPSEEK_API_KEY:sk-f85ca8b45ffc410692b6508b3b8c0516}
     base-url: https://api.deepseek.com/v1
     model: deepseek-chat
     max-tokens: 2048
@@ -43,10 +43,10 @@ app:
   
   # Redis
   redis:
-    host: ${REDIS_HOST:localhost}
+    host: ${REDIS_HOST:r-bp11djv7d4lnne5p6z.redis.rds.aliyuncs.com}
     port: ${REDIS_PORT:6379}
-    db: ${REDIS_DB:0}
-    password: ${REDIS_PASSWORD:}
+    db: ${REDIS_DB:9}
+    password: ${REDIS_PASSWORD:heMntYjSC3GArYe3hCWGvEEF}
     conversation-ttl: 3600
   
   # Retry

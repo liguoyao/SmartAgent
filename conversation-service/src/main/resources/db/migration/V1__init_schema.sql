@@ -2,27 +2,29 @@
 
 -- Conversations table
 CREATE TABLE conversations (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
     session_id VARCHAR(100) NOT NULL,
     user_id BIGINT,
     agent_id BIGINT,
     status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
-    started_at TIMESTAMP NOT NULL,
-    ended_at TIMESTAMP,
-    last_message_at TIMESTAMP,
+    started_at DATETIME NOT NULL,
+    ended_at DATETIME,
+    last_message_at DATETIME,
     message_count INTEGER DEFAULT 0,
     is_active BOOLEAN DEFAULT TRUE,
-    metadata JSONB,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    active_session_id VARCHAR(100) GENERATED ALWAYS AS
+        (CASE WHEN is_active = TRUE THEN session_id ELSE NULL END) STORED,
+    metadata JSON,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     version BIGINT DEFAULT 0,
     deleted BOOLEAN DEFAULT FALSE,
     CONSTRAINT chk_status CHECK (status IN ('ACTIVE', 'CLOSED', 'TRANSFERRED', 'ESCALATED'))
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 -- Messages table
 CREATE TABLE messages (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
     conversation_id BIGINT,
     session_id VARCHAR(100) NOT NULL,
     sender_type VARCHAR(20) NOT NULL,
@@ -34,14 +36,14 @@ CREATE TABLE messages (
     intent VARCHAR(50),
     confidence DECIMAL(5,2),
     processing_time_ms BIGINT,
-    metadata JSONB,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    metadata JSON,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     version BIGINT DEFAULT 0,
     deleted BOOLEAN DEFAULT FALSE,
     CONSTRAINT chk_sender_type CHECK (sender_type IN ('USER', 'AGENT', 'SYSTEM')),
     CONSTRAINT chk_message_type CHECK (message_type IN ('TEXT', 'IMAGE', 'FILE', 'AUDIO', 'VIDEO', 'CAROUSEL', 'QUICK_REPLY', 'SYSTEM'))
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 -- Indexes
 CREATE INDEX idx_conversations_session_id ON conversations(session_id);
@@ -57,4 +59,4 @@ CREATE INDEX idx_messages_created_at ON messages(created_at DESC);
 CREATE INDEX idx_messages_intent ON messages(intent);
 
 -- Unique constraint for active session
-CREATE UNIQUE INDEX idx_conversations_active_session ON conversations(session_id) WHERE is_active = true;
+CREATE UNIQUE INDEX idx_conversations_active_session ON conversations(active_session_id);

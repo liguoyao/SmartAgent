@@ -49,6 +49,10 @@
 
         <!-- Spring AOP for retry -->
         <dependency>
+            <groupId>org.springframework.retry</groupId>
+            <artifactId>spring-retry</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
         </dependency>
@@ -88,13 +92,6 @@
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
-        </dependency>
-
-        <!-- Sentence Transformers for embeddings -->
-        <dependency>
-            <groupId>ai.zake EmbeddingsProcessor</groupId>
-            <artifactId>embeddings-processor</artifactId>
-            <version>1.0.0</version>
         </dependency>
 
         <!-- Test dependencies -->

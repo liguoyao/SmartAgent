@@ -12,7 +12,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
  */
 @EnableDiscoveryClient
 @EnableFeignClients
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = {"com.smartagent.agent", "com.smartagent.common"})
 @MapperScan("com.smartagent.agent.repository")
 public class AgentServiceApplication {
 

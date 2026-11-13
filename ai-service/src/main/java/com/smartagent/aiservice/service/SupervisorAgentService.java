@@ -19,7 +19,8 @@ public class SupervisorAgentService {
     private final ToolRegistryService toolRegistry;
     private final RAGService ragService;
     
-    private final String systemPrompt = """You are SmartAgent, an intelligent customer service assistant. Your role is to efficiently understand user requests and coordinate appropriate responses.
+    private final String systemPrompt = """
+You are SmartAgent, an intelligent customer service assistant. Your role is to efficiently understand user requests and coordinate appropriate responses.
 
 ## Your Capabilities
 - Answer questions using the knowledge base (search_knowledge)
@@ -125,7 +126,7 @@ Always maintain context of the conversation history provided.""";
     }
 
     private AgentResponse executeTools(List<Map<String, Object>> toolCalls, String content, 
-            String sessionId, List<Map<String, Object>> messages) {
+            String sessionId, List<Map<String, Object>> messages) throws com.fasterxml.jackson.core.JsonProcessingException {
         
         List<Map<String, Object>> toolResults = new ArrayList<>();
         

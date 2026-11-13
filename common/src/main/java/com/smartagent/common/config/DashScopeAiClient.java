@@ -17,11 +17,7 @@ import java.util.Map;
 @Component
 public class DashScopeAiClient {
 
-    @Value("${dashscope.api-key:}")
-    private String apiKey;
-
-    @Value("${dashscope.base-url:https://dashscope.aliyuncs.com/api/v1}")
-    private String baseUrl;
+    private final String apiKey;
 
     @Value("${dashscope.model:qwen-turbo}")
     private String defaultModel;
@@ -34,7 +30,10 @@ public class DashScopeAiClient {
 
     private final WebClient webClient;
 
-    public DashScopeAiClient(WebClient.Builder webClientBuilder) {
+    public DashScopeAiClient(WebClient.Builder webClientBuilder,
+            @Value("${dashscope.api-key:}") String apiKey,
+            @Value("${dashscope.base-url:https://dashscope.aliyuncs.com/api/v1}") String baseUrl) {
+        this.apiKey = apiKey;
         this.webClient = webClientBuilder
             .baseUrl(baseUrl)
             .defaultHeader("Authorization", "Bearer " + apiKey)

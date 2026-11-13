@@ -4,25 +4,30 @@ server:
 spring:
   application:
     name: agent-service
+
+  config:
+    import:
+      - optional:nacos:${spring.application.name}.yaml
   
   cloud:
     nacos:
       discovery:
-        server-addr: ${NACOS_SERVER:localhost:8848}
-        namespace: ${NACOS_NAMESPACE:public}
-        group: SMARTAGENT_GROUP
+        server-addr: ${NACOS_SERVER:10.18.1.150:31214}
+        namespace: ${NACOS_NAMESPACE:3d6b484c-eb6b-4dcb-a6f5-8f5793a0bfce}
       config:
-        server-addr: ${NACOS_SERVER:localhost:8848}
-        namespace: ${NACOS_NAMESPACE:public}
-        group: SMARTAGENT_GROUP
+        server-addr: ${NACOS_SERVER:10.18.1.150:31214}
+        namespace: ${NACOS_NAMESPACE:3d6b484c-eb6b-4dcb-a6f5-8f5793a0bfce}
+        group: DEFAULT_GROUP
         file-extension: yml
         refresh-enabled: true
+      username: nacos
+      password: qiuguo-nacos
 
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/smartagent_agent?useSSL=false&serverTimezone=UTC
-    username: ${DB_USER:postgres}
-    password: ${DB_PASSWORD:postgres}
-    driver-class-name: org.postgresql.Driver
+    url: jdbc:mysql://${DB_HOST:47.111.16.30}:${DB_PORT:13306}/smartagent_agent?useSSL=false&serverTimezone=UTC
+    username: ${DB_USER:root}
+    password: ${DB_PASSWORD:Qgjh@2024}
+    driver-class-name: com.mysql.cj.jdbc.Driver
     druid:
       initial-size: 5
       min-idle: 5
@@ -33,10 +38,10 @@ spring:
 
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
+      host: ${REDIS_HOST:r-bp11djv7d4lnne5p6z.redis.rds.aliyuncs.com}
       port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:}
-      database: 0
+      password: ${REDIS_PASSWORD:heMntYjSC3GArYe3hCWGvEEF}
+      database: 12
       timeout: 5000ms
       lettuce:
         pool:
@@ -48,6 +53,8 @@ spring:
     enabled: true
     baseline-on-migrate: true
     locations: classpath:db/migration
+  main:
+    allow-circular-references: false
 
 mybatis-plus:
   mapper-locations: classpath*:/mapper/**/*.xml
@@ -63,9 +70,9 @@ mybatis-plus:
       logic-not-delete-value: 0
 
 dashscope:
-  api-key: ${DASHSCOPE_API_KEY:}
+  api-key: ${DASHSCOPE_API_KEY:sk-ws-H.YPEIIPH.KCDi.MEUCIAmNm5P-S9qRcpSnokmd4uYo4dvPU8kEwVkb0WnBIePMAiEA3F3AiXGQMXLyHNScH4ZPKkH15tFL5N-q58QIv_Q_zHE}
   base-url: https://dashscope.aliyuncs.com/api/v1
-  model: qwen-turbo
+  model: glm-5.3
   temperature: 0.7
   max-tokens: 2000
 

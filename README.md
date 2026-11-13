@@ -85,11 +85,26 @@ SmartAgent/
 - JDK 21+
 - Maven 3.9+
 - Node.js 18+
-- MySQL 8.0+
+- MySQL 8.0.16+（支持 CHECK 约束）
 - Redis
 - Nacos
 
 ### 1. 启动后端
+
+先创建 MySQL 数据库，在 MySQL 客户端执行 `scripts/init-mysql.sql`，或运行：
+
+```powershell
+mysql -u root -p -e "source scripts/init-mysql.sql"
+$env:DB_HOST = "localhost"
+$env:DB_PORT = "3306"
+$env:DB_USER = "root"
+$env:DB_PASSWORD = "你的数据库密码"
+```
+
+网关、Agent 和会话服务分别使用 `smartagent_gateway`、`smartagent_agent`、
+`smartagent_conversation`，首次启动时 Flyway 自动建表。账户需要具有建表和索引权限。
+以上环境变量需在运行启动脚本的同一 PowerShell 窗口设置。
+当前 SQL 面向全新的 MySQL 数据库，已有数据库数据及 Flyway 历史不会自动迁移。
 
 ```bash
 git clone https://github.com/nplszfl/SmartAgent.git
@@ -97,14 +112,16 @@ cd SmartAgent
 
 mvn clean install -DskipTests
 
-# AI服务
-cd ai-service && mvn spring-boot:run
-
-# 其他微服务
-cd ../gateway && mvn spring-boot:run
-cd ../agent-service && mvn spring-boot:run
-cd ../conversation-service && mvn spring-boot:run
 ```
+
+Windows 下双击 `scripts\start-services.bat`，或在项目根目录的 PowerShell 中执行：
+
+```powershell
+.\scripts\start-services.bat
+```
+
+脚本在独立命令窗口中并行启动 AI 服务、网关、Agent 服务和会话服务，日志直接显示在各窗口。
+需要安装 JDK 21+，并将 Maven 的 `bin` 目录加入 `PATH`。在各服务窗口按 `Ctrl+C` 停止对应服务。
 
 ### 2. 启动前端
 

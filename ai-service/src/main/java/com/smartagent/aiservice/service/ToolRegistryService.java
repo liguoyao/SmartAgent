@@ -46,7 +46,7 @@ public class ToolRegistryService {
         }
     }
 
-    public Map<String, Object> execute(String toolName, String... requiredKeys, Object... values) {
+    public Map<String, Object> execute(String toolName, String[] requiredKeys, Object... values) {
         Map<String, Object> args = new HashMap<>();
         for (int i = 0; i < requiredKeys.length; i++) {
             args.put(requiredKeys[i], values[i]);

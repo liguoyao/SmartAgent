@@ -1,17 +1,12 @@
 package com.smartagent.agent.agent;
 
 import com.alibaba.fastjson.JSON;
-import com.smartagent.agent.entity.Agent;
-import com.smartagent.agent.entity.AgentConversationContext;
 import com.smartagent.agent.entity.AgentType;
-import com.smartagent.agent.service.AgentService;
 import com.smartagent.common.config.DashScopeAiClient;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * Supervisor Agent - Main orchestrator that:
@@ -22,12 +17,20 @@ import java.util.concurrent.CompletableFuture;
  */
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class SupervisorAgent {
 
     private final DashScopeAiClient aiClient;
-    private final AgentService agentService;
     private final Map<AgentType, SpecialistAgent> specialistAgents;
+
+    public SupervisorAgent(DashScopeAiClient aiClient, List<SpecialistAgent> specialists) {
+        this.aiClient = aiClient;
+        this.specialistAgents = new EnumMap<>(AgentType.class);
+        for (SpecialistAgent specialist : specialists) {
+            if (this.specialistAgents.putIfAbsent(specialist.getType(), specialist) != null) {
+                throw new IllegalArgumentException("Duplicate specialist agent type: " + specialist.getType());
+            }
+        }
+    }
 
     private static final String[] INTENT_CATEGORIES = {
             "PRODUCT", "COMPLAINT", "REFUND", "ORDER", "TECHNICAL", "BILLING", "ESCALATION"
