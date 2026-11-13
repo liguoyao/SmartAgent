@@ -1,7 +1,0 @@
-com/smartagent/knowledge/repository/KnowledgeDocumentRepository.class
-com/smartagent/knowledge/controller/KnowledgeController.class
-com/smartagent/knowledge/entity/KnowledgeChunk.class
-com/smartagent/knowledge/entity/KnowledgeDocument.class
-com/smartagent/knowledge/KnowledgeServiceApplication.class
-com/smartagent/knowledge/service/KnowledgeService.class
-com/smartagent/knowledge/repository/KnowledgeChunkRepository.class
