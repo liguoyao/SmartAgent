@@ -4,7 +4,7 @@ import { useAuthStore } from '@/stores/auth'
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    redirect: '/dashboard',
+    redirect: '/admin',
   },
   {
     path: '/login',
@@ -113,7 +113,7 @@ const router = createRouter({
 })
 
 // Navigation guard
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to, _from, next) => {
   const authStore = useAuthStore()
   
   // Update page title
@@ -121,13 +121,13 @@ router.beforeEach(async (to, from, next) => {
 
   // Check authentication
   if (to.meta.requiresAuth !== false) {
-    if (!authStore.isLoggedIn) {
+    if (!authStore.userInfo) {
       // Try to restore session
       if (authStore.token) {
         try {
           await authStore.fetchUserInfo()
         } catch {
-          authStore.logout()
+          authStore.clearSession()
           return next({ name: 'Login', query: { redirect: to.fullPath } })
         }
       } else {

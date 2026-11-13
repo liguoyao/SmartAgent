@@ -35,7 +35,7 @@ apiClient.interceptors.response.use(
       ElMessage.error(res.message || 'Request failed')
       if (res.code === 401) {
         const authStore = useAuthStore()
-        authStore.logout()
+        authStore.clearSession()
         router.push('/login')
       }
       return Promise.reject(new Error(res.message || 'Request failed'))
@@ -54,7 +54,7 @@ apiClient.interceptors.response.use(
         case 401:
           ElMessage.error('Authentication expired, please login again')
           const authStore = useAuthStore()
-          authStore.logout()
+          authStore.clearSession()
           router.push('/login')
           break
         case 403:

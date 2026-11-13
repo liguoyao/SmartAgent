@@ -16,6 +16,11 @@
     <description>Agent registry, supervisor agent, and specialist agents</description>
 
     <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
         <!-- Common Module -->
         <dependency>
             <groupId>com.smartagent</groupId>

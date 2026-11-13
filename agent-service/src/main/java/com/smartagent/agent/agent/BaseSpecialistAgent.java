@@ -62,10 +62,9 @@ public abstract class BaseSpecialistAgent implements SpecialistAgent {
             log.error("Error processing message with {}: {}", getName(), e.getMessage());
             return SupervisorAgent.AgentResponse.builder()
                     .success(false)
-                    .message("I apologize, but I encountered an issue processing your request. " +
-                            "Let me connect you with a human agent.")
-                    .requiresEscalation(true)
-                    .escalationReason("AI processing failed: " + e.getMessage())
+                    .message("智能助手暂时无法处理请求，请稍后重试。")
+                    .reasonCode("SPECIALIST_PROCESSING_FAILED")
+                    .requiresEscalation(false)
                     .originalIntent(getType())
                     .sessionId(sessionId)
                     .build();
@@ -128,20 +127,4 @@ public abstract class BaseSpecialistAgent implements SpecialistAgent {
         }
     }
 
-    /**
-     * Check if the query requires human escalation
-     */
-    protected boolean requiresEscalation(String message) {
-        // Check for escalation indicators
-        String lowerMessage = message.toLowerCase();
-        
-        return lowerMessage.contains("lawyer") ||
-               lowerMessage.contains("attorney") ||
-               lowerMessage.contains("sue") ||
-               lowerMessage.contains("legal") ||
-               lowerMessage.contains("lawsuit") ||
-               lowerMessage.contains("contract") ||
-               lowerMessage.contains("refuse to") ||
-               lowerMessage.contains("manager");
-    }
 }

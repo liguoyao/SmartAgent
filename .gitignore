@@ -11,3 +11,5 @@
 ../agent-service/**
 **/target/
 .idea
+**/.npm-cache/
+**/node_modules/

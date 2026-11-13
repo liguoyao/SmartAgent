@@ -29,13 +29,16 @@ public class DashScopeAiClient {
     private Integer defaultMaxTokens;
 
     private final WebClient webClient;
+    private final boolean compatibleMode;
 
     public DashScopeAiClient(WebClient.Builder webClientBuilder,
             @Value("${dashscope.api-key:}") String apiKey,
             @Value("${dashscope.base-url:https://dashscope.aliyuncs.com/api/v1}") String baseUrl) {
         this.apiKey = apiKey;
+        String normalizedBaseUrl = baseUrl.replaceAll("/+$", "");
+        this.compatibleMode = java.net.URI.create(normalizedBaseUrl).getPath().endsWith("/compatible-mode/v1");
         this.webClient = webClientBuilder
-            .baseUrl(baseUrl)
+            .baseUrl(normalizedBaseUrl)
             .defaultHeader("Authorization", "Bearer " + apiKey)
             .build();
     }
@@ -46,15 +49,7 @@ public class DashScopeAiClient {
 
     public String chat(String prompt, String model, Double temperature, Integer maxTokens) {
         try {
-            Map<String, Object> request = buildRequest(prompt, model, temperature, maxTokens);
-            Map<String, Object> response = webClient.post()
-                .uri("/services/aigc/text-generation/generation")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(request)
-                .retrieve()
-                .bodyToMono(Map.class)
-                .block();
-            return extractContent(response);
+            return sendChat(List.of(Map.of("role", "user", "content", prompt)), model, temperature, maxTokens);
         } catch (Exception e) {
             log.error("DashScope API error: {}", e.getMessage());
             throw new RuntimeException("AI service error: " + e.getMessage(), e);
@@ -72,23 +67,7 @@ public class DashScopeAiClient {
                 Map.of("role", "system", "content", systemPrompt),
                 Map.of("role", "user", "content", userMessage)
             );
-            Map<String, Object> request = Map.of(
-                "model", model,
-                "input", Map.of("messages", messages),
-                "parameters", Map.of(
-                    "temperature", temperature,
-                    "max_tokens", maxTokens,
-                    "result_format", "message"
-                )
-            );
-            Map<String, Object> response = webClient.post()
-                .uri("/services/aigc/text-generation/generation")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(request)
-                .retrieve()
-                .bodyToMono(Map.class)
-                .block();
-            return extractContent(response);
+            return sendChat(messages, model, temperature, maxTokens);
         } catch (Exception e) {
             log.error("DashScope API error: {}", e.getMessage());
             throw new RuntimeException("AI service error: " + e.getMessage(), e);
@@ -140,12 +119,29 @@ public class DashScopeAiClient {
         return new float[1536];
     }
 
-    private Map<String, Object> buildRequest(String prompt, String model, Double temperature, Integer maxTokens) {
+    private String sendChat(List<Map<String, String>> messages, String model, Double temperature, Integer maxTokens) {
+        Map<String, Object> response = webClient.post()
+            .uri(compatibleMode ? "/chat/completions" : "/services/aigc/text-generation/generation")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(buildRequest(messages, model, temperature, maxTokens))
+            .retrieve()
+            .bodyToMono(Map.class)
+            .block();
+        return extractContent(response);
+    }
+
+    private Map<String, Object> buildRequest(List<Map<String, String>> messages, String model, Double temperature, Integer maxTokens) {
+        if (compatibleMode) {
+            return Map.of(
+                "model", model,
+                "messages", messages,
+                "temperature", temperature,
+                "max_tokens", maxTokens
+            );
+        }
         return Map.of(
             "model", model,
-            "input", Map.of("messages", List.of(
-                Map.of("role", "user", "content", prompt)
-            )),
+            "input", Map.of("messages", messages),
             "parameters", Map.of(
                 "temperature", temperature,
                 "max_tokens", maxTokens,
@@ -156,6 +152,16 @@ public class DashScopeAiClient {
 
     @SuppressWarnings("unchecked")
     private String extractContent(Map<String, Object> response) {
+        if (compatibleMode && response != null) {
+            List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
+            if (choices != null && !choices.isEmpty()) {
+                Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
+                if (message != null && message.get("content") instanceof String content) {
+                    return content;
+                }
+            }
+            throw new IllegalStateException("Chat completion response is missing choices[0].message.content");
+        }
         if (response != null && response.containsKey("output")) {
             Map<String, Object> output = (Map<String, Object>) response.get("output");
             if (output.containsKey("choices")) {

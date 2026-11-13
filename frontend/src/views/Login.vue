@@ -131,8 +131,9 @@ async function handleLogin() {
     loading.value = true
     try {
       await authStore.login(form.username, form.password)
+      const target = authStore.isAdmin ? '/admin' : '/agent'
+      await router.replace(target)
       ElMessage.success('Login successful')
-      router.push('/admin')
     } catch (error: any) {
       ElMessage.error(error.message || 'Login failed')
     } finally {

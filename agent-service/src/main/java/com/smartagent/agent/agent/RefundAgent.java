@@ -67,32 +67,6 @@ public class RefundAgent extends BaseSpecialistAgent {
     }
 
     @Override
-    public SupervisorAgent.AgentResponse process(String message, String sessionId, Long userId) {
-        // Extract order information
-        Map<String, String> entities = extractEntities(message);
-        String orderId = entities.get("order_id");
-        
-        // Check for complex refund cases that need human intervention
-        if (message.toLowerCase().contains("chargeback") ||
-            message.toLowerCase().contains("dispute") ||
-            message.toLowerCase().contains("bank")) {
-            return SupervisorAgent.AgentResponse.builder()
-                    .success(true)
-                    .message("I understand this is a financial dispute that requires careful handling. " +
-                            "Let me connect you with our billing department who can investigate this matter " +
-                            "and take appropriate action.")
-                    .requiresEscalation(true)
-                    .escalationReason("Financial dispute or chargeback")
-                    .originalIntent(getType())
-                    .sessionId(sessionId)
-                    .metadata(Map.of("orderId", orderId != null ? orderId : "unknown"))
-                    .build();
-        }
-
-        return super.process(message, sessionId, userId);
-    }
-
-    @Override
     protected String buildPrompt(String userMessage) {
         StringBuilder prompt = new StringBuilder();
         

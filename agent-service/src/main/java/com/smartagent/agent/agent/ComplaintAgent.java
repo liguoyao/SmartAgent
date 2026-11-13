@@ -70,24 +70,6 @@ public class ComplaintAgent extends BaseSpecialistAgent {
     }
 
     @Override
-    public SupervisorAgent.AgentResponse process(String message, String sessionId, Long userId) {
-        // Check for escalation triggers first
-        if (requiresEscalation(message)) {
-            return SupervisorAgent.AgentResponse.builder()
-                    .success(true)
-                    .message("I understand you're very upset, and I want to make sure we address this properly. " +
-                            "Let me connect you with a senior support agent who has more authority to help resolve your issue.")
-                    .requiresEscalation(true)
-                    .escalationReason("Customer emotional or legal threats detected")
-                    .originalIntent(getType())
-                    .sessionId(sessionId)
-                    .build();
-        }
-
-        return super.process(message, sessionId, userId);
-    }
-
-    @Override
     protected String buildPrompt(String userMessage) {
         StringBuilder prompt = new StringBuilder();
         prompt.append("Customer Complaint: ").append(userMessage).append("\n\n");

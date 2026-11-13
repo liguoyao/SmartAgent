@@ -16,6 +16,11 @@
     <description>Shared entities, DTOs, and utilities</description>
 
     <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
         <!-- Spring Boot Starter Web (for API responses) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

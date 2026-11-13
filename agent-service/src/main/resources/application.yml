@@ -1,3 +1,25 @@
+agent:
+  routing:
+    min-confidence: 0.6
+    escalation-enabled: true
+    # First matching enabled rule wins. Empty intents means all intent types.
+    rules:
+      - id: complaint-legal
+        intents: [COMPLAINT]
+        keywords: [lawyer, attorney, sue, legal, lawsuit, 律师, 起诉, 诉讼]
+        reason: 投诉涉及法律争议，需要人工处理
+        message: 您的问题涉及法律争议，需要人工客服进一步核实处理。
+      - id: complaint-manager
+        intents: [COMPLAINT]
+        keywords: [speak to a manager, talk to a manager, 找主管, 转主管]
+        reason: 用户明确要求主管介入
+        message: 已记录您要求主管介入的诉求，需要人工客服进一步处理。
+      - id: refund-dispute
+        intents: [REFUND]
+        keywords: [chargeback, dispute, 拒付, 交易争议]
+        reason: 退款涉及拒付或交易争议
+        message: 您的退款涉及交易争议，需要人工客服核实后处理。
+
 server:
   port: 8081
 
@@ -71,7 +93,7 @@ mybatis-plus:
 
 dashscope:
   api-key: ${DASHSCOPE_API_KEY:sk-ws-H.YPEIIPH.KCDi.MEUCIAmNm5P-S9qRcpSnokmd4uYo4dvPU8kEwVkb0WnBIePMAiEA3F3AiXGQMXLyHNScH4ZPKkH15tFL5N-q58QIv_Q_zHE}
-  base-url: https://dashscope.aliyuncs.com/api/v1
+  base-url: https://ws-8bf265nmnx04mmu8.cn-beijing.maas.aliyuncs.com/compatible-mode/v1
   model: glm-5.3
   temperature: 0.7
   max-tokens: 2000

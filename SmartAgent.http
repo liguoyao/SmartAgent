@@ -1,0 +1,324 @@
+# SmartAgent 全部业务 HTTP 接口（7 个 Controller，41 个请求）
+# 在 IntelliJ IDEA HTTP Client 中逐条运行；修改下面的地址与业务 ID。
+# gateway / agent / conversation / ai 端口来自本地 application.yml，Nacos 或运行参数可覆盖。
+# knowledge / ticket 未提供本地端口配置，8083 / 8084 仅为示例，请改成实际地址。
+# 下游接口默认直连：当前网关 /api/agent/**、/api/conversation/** 与复数 Controller 路径不匹配；
+# knowledge 路由 StripPrefix=1 后丢失 /api；ticket 路由为单数且同样移除 /api。
+# 因此不要直接将所有服务地址替换为 gatewayBaseUrl。
+# 顺序建议：登录 -> 创建 Agent（记录返回 ID）-> 处理消息（建立会话）-> 查询/操作会话。
+# 创建知识文档、工单后，将响应 ID 填回变量。关闭、停用、注销请求按需单独运行。
+# token 可手动粘贴；IDEA 下登录/刷新成功后会自动保存到 client.global。
+# 接口只覆盖源码已实现的业务端点；/api/auth/register 只有白名单配置，没有 Controller。
+# 末尾另附 SockJS 探测请求；STOMP 连接与消息需要 WebSocket/STOMP 客户端。
+
+@gatewayBaseUrl = http://localhost:8080
+@agentBaseUrl = http://localhost:8081
+@conversationBaseUrl = http://localhost:8082
+@aiBaseUrl = http://localhost:8000
+@knowledgeBaseUrl = http://localhost:8083
+@ticketBaseUrl = http://localhost:8084
+@username = admin
+@password = admin123
+@agentId = 1
+@newAgentId = 2
+@agentType = PRODUCT
+@userId = 1
+@sessionId = http-demo-session-001
+@documentId = 1
+@ticketId = 1
+@assigneeId = 1
+@page = 1
+@size = 10
+@limit = 50
+@topK = 3
+@maxChars = 3000
+@query = refund
+
+### 01 登录（AuthController.login，当前源码演示账号 admin/admin123）
+POST {{gatewayBaseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "{{username}}",
+  "password": "{{password}}",
+  "deviceId": "http-client-demo",
+  "deviceType": "IDEA"
+}
+
+> {%
+    if (response.status === 200 && response.body.data && response.body.data.accessToken) {
+        client.global.set("accessToken", response.body.data.accessToken);
+        client.global.set("refreshToken", response.body.data.refreshToken);
+    }
+%}
+
+### 02 刷新 Token（AuthController.refresh；先执行登录）
+POST {{gatewayBaseUrl}}/api/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+> {%
+    if (response.status === 200 && response.body.data && response.body.data.accessToken) {
+        client.global.set("accessToken", response.body.data.accessToken);
+        client.global.set("refreshToken", response.body.data.refreshToken);
+    }
+%}
+
+### 03 校验 Token（AuthController.validateToken）
+GET {{gatewayBaseUrl}}/api/auth/validate
+Authorization: Bearer {{accessToken}}
+
+### 04 注销（AuthController.logout；建议最后运行，会向 Redis 写入黑名单）
+POST {{gatewayBaseUrl}}/api/auth/logout
+Authorization: Bearer {{accessToken}}
+
+### 05 处理消息（AgentController.processMessage；message 必填，sessionId/userId 可选）
+POST {{agentBaseUrl}}/agents/message
+Content-Type: application/json
+
+{
+  "message": "我想了解商品的退款流程",
+  "sessionId": "{{sessionId}}",
+  "userId": {{userId}}
+}
+
+### 06 查询全部活跃 Agent（AgentController.getAllAgents）
+GET {{agentBaseUrl}}/agents
+
+### 07 按 ID 查询 Agent（AgentController.getAgentById）
+GET {{agentBaseUrl}}/agents/{{agentId}}
+
+### 08 按类型查询 Agent（AgentController.getAgentsByType）
+# 类型：SUPERVISOR / PRODUCT / COMPLAINT / REFUND / ORDER / TECHNICAL / BILLING / ESCALATION
+GET {{agentBaseUrl}}/agents/type/{{agentType}}
+
+### 09 创建 Agent（AgentController.createAgent；capabilities/keywords/config 为字符串字段）
+POST {{agentBaseUrl}}/agents
+Content-Type: application/json
+
+{
+  "name": "HTTP 测试商品助手",
+  "type": "PRODUCT",
+  "description": "回答商品咨询",
+  "systemPrompt": "你是商品咨询助手，请准确简洁地回答问题。",
+  "capabilities": "[\"product_query\",\"product_recommendation\"]",
+  "keywords": "[\"商品\",\"价格\",\"规格\"]",
+  "isActive": true,
+  "priority": 10,
+  "maxConversations": 100,
+  "config": "{}"
+}
+
+### 10 更新 Agent（AgentController.updateAgent）
+PUT {{agentBaseUrl}}/agents/{{agentId}}
+Content-Type: application/json
+
+{
+  "name": "HTTP 测试商品助手（已更新）",
+  "type": "PRODUCT",
+  "description": "回答商品咨询与售后问题",
+  "systemPrompt": "你是商品咨询助手，请准确简洁地回答问题。",
+  "capabilities": "[\"product_query\",\"product_recommendation\"]",
+  "keywords": "[\"商品\",\"价格\",\"规格\"]",
+  "isActive": true,
+  "priority": 20,
+  "maxConversations": 100,
+  "config": "{}"
+}
+
+### 11 停用 Agent（AgentController.deactivateAgent；会修改数据）
+DELETE {{agentBaseUrl}}/agents/{{agentId}}
+
+### 12 Agent 统计（AgentController.getAgentStatistics）
+GET {{agentBaseUrl}}/agents/statistics
+
+### 13 意图分类（AgentController.classifyIntent）
+POST {{agentBaseUrl}}/agents/classify
+Content-Type: application/json
+
+{
+  "message": "我购买的商品有质量问题，需要申请退款"
+}
+
+### 14 按会话 ID 查询（ConversationController.getConversation；需已存在会话）
+GET {{conversationBaseUrl}}/conversations/{{sessionId}}
+
+### 15 查询用户活跃会话（ConversationController.getUserConversations）
+GET {{conversationBaseUrl}}/conversations/user/{{userId}}
+
+### 16 查询全部活跃会话（ConversationController.getActiveConversations）
+GET {{conversationBaseUrl}}/conversations/active
+
+### 17 关闭会话（ConversationController.closeConversation；会修改数据）
+POST {{conversationBaseUrl}}/conversations/{{sessionId}}/close
+
+### 18 转接会话（ConversationController.transferConversation；newAgentId 为必填查询参数）
+POST {{conversationBaseUrl}}/conversations/{{sessionId}}/transfer?newAgentId={{newAgentId}}
+
+### 19 升级人工（ConversationController.escalateConversation）
+POST {{conversationBaseUrl}}/conversations/{{sessionId}}/escalate
+
+### 20 查询全部消息（ConversationController.getMessages）
+GET {{conversationBaseUrl}}/conversations/{{sessionId}}/messages
+
+### 21 查询最近消息（ConversationController.getRecentMessages；limit 默认 50）
+GET {{conversationBaseUrl}}/conversations/{{sessionId}}/messages/recent?limit={{limit}}
+
+### 22 查询历史摘要（ConversationController.getHistorySummary）
+GET {{conversationBaseUrl}}/conversations/{{sessionId}}/summary
+
+### 23 会话统计（ConversationController.getStatistics）
+GET {{conversationBaseUrl}}/conversations/statistics
+
+### 24 AI 对话（ChatController.chat；message 必填，其他字段可选）
+POST {{aiBaseUrl}}/api/v1/chat
+Content-Type: application/json
+
+{
+  "message": "请介绍退款流程",
+  "sessionId": "{{sessionId}}",
+  "useTools": true,
+  "stream": false
+}
+
+### 25 AI 流式对话（ChatController.chatStream；SSE，以 /chat/stream 路径选择流式响应）
+POST {{aiBaseUrl}}/api/v1/chat/stream
+Content-Type: application/json
+Accept: text/event-stream
+
+{
+  "message": "请介绍退款流程",
+  "sessionId": "{{sessionId}}",
+  "useTools": true,
+  "stream": true
+}
+
+### 26 批量添加 AI 知识文档（ai-service KnowledgeController.addDocuments；请求体为数组）
+POST {{aiBaseUrl}}/api/v1/knowledge/add
+Content-Type: application/json
+
+[
+  {
+    "content": "退款申请可在订单详情页发起，审核通过后按原支付渠道退回。",
+    "metadata": {
+      "source": "http-client-demo",
+      "category": "refund"
+    }
+  }
+]
+
+### 27 AI 知识检索（ai-service KnowledgeController.search）
+POST {{aiBaseUrl}}/api/v1/knowledge/search
+Content-Type: application/json
+
+{
+  "query": "退款申请如何办理？",
+  "topK": {{topK}}
+}
+
+### 28 获取知识上下文（ai-service KnowledgeController.getContext；参数均在 URL 中）
+# query 必填；topK 可选；maxChars 默认 3000。中文查询时请在客户端进行 URL 编码。
+POST {{aiBaseUrl}}/api/v1/knowledge/context?query={{query}}&topK={{topK}}&maxChars={{maxChars}}
+
+### 29 AI 知识库统计（ai-service KnowledgeController.getStats）
+GET {{aiBaseUrl}}/api/v1/knowledge/stats
+
+### 30 创建知识文档（knowledge-service KnowledgeController.createDocument）
+POST {{knowledgeBaseUrl}}/api/knowledge/documents
+Content-Type: application/json
+
+{
+  "title": "退款操作指南",
+  "content": "打开订单详情页，点击申请退款，填写退款原因后提交。",
+  "category": "refund",
+  "tags": "退款,售后"
+}
+
+### 31 查询知识文档详情（knowledge-service KnowledgeController.getDocument；同时增加浏览次数）
+GET {{knowledgeBaseUrl}}/api/knowledge/documents/{{documentId}}
+
+### 32 分页检索知识文档（knowledge-service KnowledgeController.searchDocuments）
+# keyword 可选；page 默认 1，size 默认 10。
+GET {{knowledgeBaseUrl}}/api/knowledge/documents?keyword={{query}}&page={{page}}&size={{size}}
+
+### 33 查询文档分块（knowledge-service KnowledgeController.getChunks）
+GET {{knowledgeBaseUrl}}/api/knowledge/documents/{{documentId}}/chunks
+
+### 34 上传知识文档（knowledge-service KnowledgeController.uploadDocument）
+# 内嵌文本文件可直接运行，无需准备本地附件；file/title/category 均必填。
+POST {{knowledgeBaseUrl}}/api/knowledge/documents/upload
+Content-Type: multipart/form-data; boundary=SmartAgentUploadBoundary
+
+--SmartAgentUploadBoundary
+Content-Disposition: form-data; name="file"; filename="refund-guide.txt"
+Content-Type: text/plain; charset=UTF-8
+
+退款操作指南：进入订单详情页，选择申请退款，填写原因并提交审核。
+--SmartAgentUploadBoundary
+Content-Disposition: form-data; name="title"
+
+HTTP 上传退款指南
+--SmartAgentUploadBoundary
+Content-Disposition: form-data; name="category"
+
+refund
+--SmartAgentUploadBoundary--
+
+### 35 创建工单（TicketController.createTicket；customerId 必须为数字）
+POST {{ticketBaseUrl}}/api/tickets
+Content-Type: application/json
+
+{
+  "title": "退款进度咨询",
+  "description": "退款申请提交后尚未收到处理结果，请协助查询。",
+  "priority": "MEDIUM",
+  "category": "refund",
+  "customerId": {{userId}},
+  "customerName": "HTTP 测试客户"
+}
+
+### 36 分页查询工单（TicketController.listTickets；status/priority 可选）
+GET {{ticketBaseUrl}}/api/tickets?status=OPEN&priority=MEDIUM&page={{page}}&size={{size}}
+
+### 37 查询工单详情（TicketController.getTicket）
+GET {{ticketBaseUrl}}/api/tickets/{{ticketId}}
+
+### 38 分配工单（TicketController.assignTicket；assigneeId 必须为数字）
+PUT {{ticketBaseUrl}}/api/tickets/{{ticketId}}/assign
+Content-Type: application/json
+
+{
+  "assigneeId": {{assigneeId}},
+  "assigneeName": "HTTP 测试客服"
+}
+
+### 39 关闭工单（TicketController.closeTicket；会修改数据）
+PUT {{ticketBaseUrl}}/api/tickets/{{ticketId}}/close
+Content-Type: application/json
+
+{
+  "resolution": "已核实退款进度并向客户说明，问题已解决。"
+}
+
+### 40 查询工单评论（TicketController.getComments）
+GET {{ticketBaseUrl}}/api/tickets/{{ticketId}}/comments
+
+### 41 添加工单评论（TicketController.addComment）
+# 当前 Controller 将 isInternal 强制转为 String，必须使用 "false" / "true" 字符串。
+POST {{ticketBaseUrl}}/api/tickets/{{ticketId}}/comments
+Content-Type: application/json
+
+{
+  "userId": {{userId}},
+  "userName": "HTTP 测试客服",
+  "content": "已联系客户，正在核实退款处理进度。",
+  "isInternal": "false"
+}
+
+### 附加：SockJS 握手信息探测（WebSocketConfig；不计入 41 个业务 HTTP 接口）
+# STOMP 端点为 ws://localhost:8082/ws；此请求仅验证 SockJS info 端点。
+# STOMP CONNECT 鉴权要求参见 WebSocketAuthInterceptor，不可用此 GET 替代消息收发。
+GET {{conversationBaseUrl}}/ws/info
